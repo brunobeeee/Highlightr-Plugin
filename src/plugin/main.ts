@@ -9,6 +9,7 @@ import highlighterMenu from "src/ui/highlighterMenu";
 import { createHighlighterIcons } from "src/icons/customIcons";
 
 import { createStyles } from "src/utils/createStyles";
+import { hasBlockPrefix, wrapLines } from "src/utils/wrapLines";
 import { EnhancedApp, EnhancedEditor } from "src/settings/types";
 
 export default class HighlightrPlugin extends Plugin {
@@ -120,6 +121,20 @@ export default class HighlightrPlugin extends Plugin {
             };
             return changeCursor(-1);
           }
+        }
+
+        const startsAtLineStart = !editor
+          .getLine(curserStart.line)
+          .slice(0, curserStart.ch)
+          .trim();
+
+        if (
+          selectedText.includes("\n") ||
+          (startsAtLineStart && hasBlockPrefix(selectedText))
+        ) {
+          return editor.replaceSelection(
+            wrapLines(selectedText, prefix, suffix, startsAtLineStart)
+          );
         }
 
         editor.replaceSelection(`${prefix}${selectedText}${suffix}`);
